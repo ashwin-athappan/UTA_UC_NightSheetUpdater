@@ -232,11 +232,11 @@ class SharepointBrowser(tk.Tk):
 
         try:
             folder_path = self.current_path
-            file_name = self.selected_file
+            night_sheet_filename = self.selected_file
             start = datetime.strptime(self.start_date_str, "%m/%d/%y")
             end = datetime.strptime(self.end_date_str, "%m/%d/%y")
 
-            result_msg = run_on_sharepoint_file(folder_path, file_name, start, end)
+            result_msg = run_on_sharepoint_file(start, end, folder_path, night_sheet_filename)
             messagebox.showinfo("Success", result_msg)
 
         except Exception as e:

@@ -94,3 +94,23 @@ class Sharepoint:
         target_folder = conn.web.get_folder_by_server_relative_path(target_folder_url)
         response = target_folder.upload_file(file_name, content).execute_query()
         return {"error": None, "response": response}
+
+    def create_folder(self, folder_name):
+        conn = self._auth()
+        target_folder_url = f'{SHAREPOINT_DOC_LIBRARY}/{folder_name}'
+        try:
+            folder = conn.web.folders.add(target_folder_url).execute_query()
+            return {"error": None, "folder": folder}
+        except Exception as e:
+            return {"error": str(e), "folder": None}
+
+    def check_if_folder_exists(self, folder_name):
+        conn = self._auth()
+        target_folder_url = f'{SHAREPOINT_DOC_LIBRARY}/{folder_name}'
+        try:
+            folder = conn.web.get_folder_by_server_relative_url(target_folder_url)
+            conn.load(folder).execute_query()
+            return {"exists": True, "error": None}
+        except Exception as e:
+            return {"exists": False, "error": str(e)}
+
