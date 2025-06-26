@@ -29,6 +29,7 @@ class DashboardScreen(Screen):
     selected_file = None
     dialog = None
     file_type = None
+    folder_cache = {}  # Cache: { "path": { "files": [...], "folders": [...] } }
 
     def select_file(self, file_type):
         self.file_type = file_type
@@ -63,7 +64,13 @@ class DashboardScreen(Screen):
         container.add_widget(breadcrumb)
 
         try:
-            response = self.sharepoint.get_files_folders_list(path)
+            response = {}
+            if path in self.folder_cache:
+                response = self.folder_cache[path]
+            else:
+                # Fetch from SharePoint
+                response = self.sharepoint.get_files_folders_list(path)
+                self.folder_cache[path] = response
 
             for folder in response['folders']:
                 name = folder.properties['Name']
@@ -200,7 +207,8 @@ class DashboardScreen(Screen):
             turnover_sheet_file_name = self.turnover_sheet_path.split("/")[-1]
             print("Night Sheet:", night_sheet_file_name)
             print("Turnovers Sheet:", turnover_sheet_file_name)
-            result = run_on_sharepoint_file(start_dt, end_dt, self.current_path, night_sheet_file_name, turnover_sheet_file_name)
+            result = run_on_sharepoint_file(self.sharepoint, start_dt, end_dt, self.current_path, night_sheet_file_name, turnover_sheet_file_name)
+            print(result)
         except Exception as e:
             print("Error running script:", e)
             self._open_snackbar(message="⚠️ Error running script")

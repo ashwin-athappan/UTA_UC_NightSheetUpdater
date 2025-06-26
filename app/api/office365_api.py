@@ -9,8 +9,6 @@ from office365.sharepoint.files.file import File
 env = environ.Env()
 env.read_env()
 
-# USERNAME = env("SHAREPOINT_EMAIL")
-# PASSWORD = env("SHAREPOINT_PASSWORD")
 SHAREPOINT_SITE_URL = env("SHAREPOINT_SITE_URL")
 SHAREPOINT_SITE_NAME = env("SHAREPOINT_SITE_NAME")
 SHAREPOINT_DOC_LIBRARY = env("SHAREPOINT_DOC_LIBRARY")
@@ -72,7 +70,7 @@ class Sharepoint:
             return {"error": f"Download error: {e}", "downloaded_file_path": None}
 
         # Build path safely with threading lock
-        folder_hierarchy = 'local_directory'
+        folder_hierarchy = 'api/local_directory'
         path_parts = folder_path.split('/') if folder_path else []
 
         with self.lock:

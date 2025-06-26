@@ -7,7 +7,7 @@ import environ
 import requests
 import openpyxl
 
-from old.office365_api import Sharepoint
+from .office365_api import Sharepoint
 
 # === ENVIRONMENT SETUP ===
 env = environ.Env()
@@ -22,8 +22,6 @@ IMAGES_DOWNLOADED_FLAG = False
 
 BUILDING_IDS = [334, 335, 340, 341]
 SHAREPOINT_URL_BASE = "https://mavsuta.sharepoint.com/sites/EOTEventOperationsTeam181"
-
-sharepoint = Sharepoint()
 
 
 def format_date(dt: datetime) -> str:
@@ -52,14 +50,14 @@ def fetch_api_data(API_URL: str, body, method='POST') -> dict:
         raise Exception(f"API call failed: {e}")
 
 
-def save_diagram_and_upload(base64_string: str, file_name: str, upload_folder: str, content_type: str) -> str:
+def save_diagram_and_upload(base64_string: str, file_name: str, upload_folder: str, content_type: str, sharepoint) -> str:
     try:
         if not file_name.lower().endswith(".png"):
             file_name = file_name.rsplit('.', 1)[0] + "." + content_type.split("/")[1]
 
         binary_data = base64.b64decode(base64_string)
 
-        local_path = f"./local_directory/temp_diagrams/{file_name}"
+        local_path = f"api/local_directory/temp_diagrams/{file_name}"
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         with open(local_path, "wb") as f:
             f.write(binary_data)
@@ -87,7 +85,7 @@ def group_bookings_by_date(bookings: list, sheet_type: str) -> dict:
     return grouped
 
 
-def download_and_add_diagram_path(grouped_bookings: dict):
+def download_and_add_diagram_path(grouped_bookings: dict, sharepoint: Sharepoint) -> dict:
     image_folder_base = "General/EventSetupDiagrams/Mazevo/RoomDiagrams"
     image_folder_name = datetime.now().strftime("%Y_%m_%d")
     for sheet_name, bookings in grouped_bookings.items():
@@ -104,7 +102,7 @@ def download_and_add_diagram_path(grouped_bookings: dict):
                     content_type = response.get("contentType")
                     if base64_str:
                         diagram_file_name = f"{sheet_name}_{booking['bookingId']}_{response['fileName']}"
-                        uploaded_path = save_diagram_and_upload(base64_str, diagram_file_name, folder_path, content_type)
+                        uploaded_path = save_diagram_and_upload(base64_str, diagram_file_name, folder_path, content_type, sharepoint)
                         booking["diagramPath"] = uploaded_path
                     else:
                         booking["diagramPath"] = None
@@ -192,13 +190,13 @@ def filter_events(api_data):
     })
 
 
-def process_excel_night_sheet(bookings: list, file_path: str):
+def process_excel_night_sheet(bookings: list, file_path: str, sharepoint: Sharepoint):
     grouped = group_bookings_by_date(bookings, sheet_type='night_sheet')
     print("📅 Night Sheet Grouped bookings by date:")
     for date, items in grouped.items():
         print(f" - {date}: {len(items)} bookings")
     if not IMAGES_DOWNLOADED_FLAG:
-        grouped = download_and_add_diagram_path(grouped)
+        grouped = download_and_add_diagram_path(grouped, sharepoint)
     remaining_bookings = write_bookings_to_excel(grouped, file_path)
     return remaining_bookings
 
@@ -209,7 +207,7 @@ def process_excel_turnovers_sheet(bookings: list, file_path: str):
         print(f" - {date}: {len(items)} bookings")
     write_bookings_to_excel(grouped, file_path)
 
-def run_on_sharepoint_file(start_date: datetime, end_date: datetime, folder_path: str, night_sheet_filename: str = "Night Sheet - Multi Day Test.xlsx", turnovers_sheet_filename: str = "Turnovers - Multi Day Test.xlsx") -> str:
+def run_on_sharepoint_file(sharepoint: Sharepoint, start_date: datetime, end_date: datetime, folder_path: str, night_sheet_filename: str = "Night Sheet - Multi Day Test.xlsx", turnovers_sheet_filename: str = "Turnovers - Multi Day Test.xlsx") -> str:
     events_body = {
         "start": format_date(start_date),
         "end": format_date(end_date),
@@ -230,7 +228,7 @@ def run_on_sharepoint_file(start_date: datetime, end_date: datetime, folder_path
         raise Exception(f"Download failed: {result['error']}")
     local_path = result["downloaded_file_path"]
 
-    remaining_bookings = process_excel_night_sheet(booking_data, local_path)
+    remaining_bookings = process_excel_night_sheet(booking_data, local_path, sharepoint)
     if remaining_bookings:
         result = sharepoint.download_file(turnovers_sheet_filename, folder_path)
         if result["error"]:
@@ -249,6 +247,7 @@ def run_on_sharepoint_file(start_date: datetime, end_date: datetime, folder_path
 
 # Example execution
 if __name__ == "__main__":
+    sharepoint_obj = Sharepoint()
     folder_path = "Apps/Mazevo"
     night_sheet_file_name = "Night Sheet - Multi Day Test.xlsx"
     turnover_sheet_file_name = "Turnovers - Multi Day Test.xlsx"
@@ -256,7 +255,7 @@ if __name__ == "__main__":
     end_date = datetime(2025, 6, 28)
 
     try:
-        res = run_on_sharepoint_file(start_date, end_date, folder_path, night_sheet_file_name, turnover_sheet_file_name)
+        res = run_on_sharepoint_file(sharepoint_obj, start_date, end_date, folder_path, night_sheet_file_name, turnover_sheet_file_name)
         print(res)
     except Exception as e:
         print(f"❌ Error: {e}")
