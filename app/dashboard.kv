@@ -1,0 +1,62 @@
+<DashboardScreen>:
+    night_sheet_path: night_label.text
+    turnover_sheet_path: turnover_label.text
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 30
+        spacing: 20
+
+        MDLabel:
+            text: "Dashboard"
+            font_style: "H5"
+            halign: "center"
+
+        MDBoxLayout:
+            spacing: 10
+            MDLabel:
+                text: "Select Night Sheet:"
+                size_hint_x: 0.4
+            MDRaisedButton:
+                text: "Choose File"
+                on_release: root.select_file("night")
+        MDLabel:
+            id: night_label
+            text: "/path/to/default/night_sheet.xlsx"
+            theme_text_color: "Secondary"
+
+        MDBoxLayout:
+            spacing: 10
+            MDLabel:
+                text: "Select Turnovers Sheet:"
+                size_hint_x: 0.4
+            MDRaisedButton:
+                text: "Choose File"
+                on_release: root.select_file("turnover")
+        MDLabel:
+            id: turnover_label
+            text: "/path/to/default/turnover_sheet.xlsx"
+            theme_text_color: "Secondary"
+
+        MDBoxLayout:
+            spacing: 10
+            MDLabel:
+                text: "Start Date:"
+                size_hint_x: 0.4
+            MDRaisedButton:
+                text: root.start_date_value or "Select Start Date"
+                on_release: root.show_date_picker("start")
+
+        MDBoxLayout:
+            spacing: 10
+            MDLabel:
+                text: "End Date:"
+                size_hint_x: 0.4
+            MDRaisedButton:
+                text: root.end_date_value or "Select End Date"
+                on_release: root.show_date_picker("end")
+
+        MDRaisedButton:
+            text: "Run Script"
+            pos_hint: {"center_x": 0.5}
+            on_release: root.run_script()

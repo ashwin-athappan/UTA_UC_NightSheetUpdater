@@ -4,3 +4,6 @@ tkcalendar
 python-environ
 requests
 pandas
+kivy
+kivy-garden
+kivymd

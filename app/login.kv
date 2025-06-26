@@ -1,0 +1,77 @@
+<LoginScreen>:
+    MDAnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            size_hint: None, None
+            width: 1000
+            height: 600
+            spacing: 65
+            padding: [30, 30, 30, 30]
+            md_bg_color: 0.1, 0.1, 0.1, 1
+            radius: [20, 20, 20, 20]
+
+            MDLabel:
+                text: "Login"
+                halign: "center"
+                font_style: "H4"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+                size_hint_y: None
+                height: self.texture_size[1]
+
+            MDTextField:
+                id: email
+                hint_text: "Email"
+                mode: "rectangle"
+                size_hint_y: None
+                height: 60
+
+            MDBoxLayout:
+                orientation: 'horizontal'
+                spacing: 60
+                size_hint_y: None
+                height: 60
+
+                MDTextField:
+                    id: password
+                    hint_text: "Password"
+                    mode: "rectangle"
+                    password: True
+                    size_hint_x: 0.85
+
+                MDIconButton:
+                    id: show_password
+                    icon: "eye"
+                    size_hint_x: 0.15
+                    on_release:
+                        self.icon = "eye-off" if self.icon == "eye" else "eye"
+                        password.password = not password.password
+
+            MDBoxLayout:
+                orientation: 'horizontal'
+                spacing: 10
+                size_hint_y: None
+                height: 30
+
+                MDCheckbox:
+                    id: remember_checkbox
+                    size_hint: None, None
+                    size: "24dp", "24dp"
+                    pos_hint: {'center_y': 0.5}
+
+                MDLabel:
+                    text: "Remember me"
+                    theme_text_color: "Custom"
+                    text_color: 1, 1, 1, 1
+                    halign: "left"
+                    valign: "middle"
+
+            MDRaisedButton:
+                text: "Login"
+                size_hint_y: None
+                height: 50
+                pos_hint: {"center_x": 0.5}
+                on_release: root.validate_credentials()

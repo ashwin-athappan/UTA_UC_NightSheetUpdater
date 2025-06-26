@@ -7,7 +7,7 @@ import environ
 import requests
 import openpyxl
 
-from office365_api import Sharepoint
+from old.office365_api import Sharepoint
 
 # === ENVIRONMENT SETUP ===
 env = environ.Env()
@@ -59,7 +59,7 @@ def save_diagram_and_upload(base64_string: str, file_name: str, upload_folder: s
 
         binary_data = base64.b64decode(base64_string)
 
-        local_path = f"local_directory/temp_diagrams/{file_name}"
+        local_path = f"./local_directory/temp_diagrams/{file_name}"
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         with open(local_path, "wb") as f:
             f.write(binary_data)

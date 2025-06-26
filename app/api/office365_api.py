@@ -9,21 +9,23 @@ from office365.sharepoint.files.file import File
 env = environ.Env()
 env.read_env()
 
-USERNAME = env("sharepoint_email")
-PASSWORD = env("sharepoint_password")
-SHAREPOINT_SITE_URL = env("sharepoint_site_url")
-SHAREPOINT_SITE_NAME = env("sharepoint_site_name")
-SHAREPOINT_DOC_LIBRARY = env("sharepoint_doc_library")
+# USERNAME = env("SHAREPOINT_EMAIL")
+# PASSWORD = env("SHAREPOINT_PASSWORD")
+SHAREPOINT_SITE_URL = env("SHAREPOINT_SITE_URL")
+SHAREPOINT_SITE_NAME = env("SHAREPOINT_SITE_NAME")
+SHAREPOINT_DOC_LIBRARY = env("SHAREPOINT_DOC_LIBRARY")
 
 
 class Sharepoint:
-    def __init__(self):
+    def __init__(self, email, password):
         self.lock = threading.Lock()  # For thread-safe folder creation
+        self.email = email
+        self.password = password
 
     def _auth(self):
         # Always return a new ClientContext to ensure thread safety
         return ClientContext(SHAREPOINT_SITE_URL).with_credentials(
-            UserCredential(USERNAME, PASSWORD)
+            UserCredential(self.email, self.password)
         )
 
     def _get_files_list(self, folder_name):
